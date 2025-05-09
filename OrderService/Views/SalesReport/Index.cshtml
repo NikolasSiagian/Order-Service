@@ -1,0 +1,119 @@
+﻿@model List<OrderService.Models.Order>
+@{
+    ViewData["Title"] = "Laporan Penjualan";
+    Layout = "~/Views/Shared/_Layouts.cshtml";
+}
+
+<h1 class="h3 mb-4 text-gray-800">Laporan Penjualan</h1>
+
+<!-- Form Filter -->
+<form method="get" class="mb-4">
+    <div class="form-row align-items-center">
+        <div class="col-sm-4">
+            <label for="startDate" class="sr-only">Dari Tanggal</label>
+            <input type="date" name="startDate" class="form-control form-control-sm" id="startDate" value="@Context.Request.Query["startDate"]" placeholder="Dari Tanggal" />
+        </div>
+        <div class="col-sm-4">
+            <label for="endDate" class="sr-only">Sampai Tanggal</label>
+            <input type="date" name="endDate" class="form-control form-control-sm" id="endDate" value="@Context.Request.Query["endDate"]" placeholder="Sampai Tanggal" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">Tampilkan</button>
+        </div>
+    </div>
+</form>
+
+<!-- Tabel Penjualan -->
+<div class="card-body">
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Silakan pilih rentang tanggal untuk melihat laporan penjualan.</div>
+    }
+    else
+    {
+        <!-- Chart -->
+        <div class="card-body">
+            <canvas id="salesChart"></canvas> 
+        </div>
+
+        <a class="btn btn-success mb-3"
+           href="@Url.Action("ExportSummary", "SalesReport", new {
+           startDate = ViewBag.StartDate,
+           endDate = ViewBag.EndDate
+            })" target="_blank">
+            Cetak Ringkasan PDF
+        </a>
+
+        <table class="table table-bordered table-sm">
+            <thead class="thead-light">
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Total Penjualan (Rp)</th>
+                    <th>Jumlah Order</th>
+                    <th>Opsi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dateGroup in ViewBag.SalesByDate)
+                {
+                    <tr>
+                        <!-- Tampilkan Tanggal -->
+                        <td>@dateGroup.Tanggal.ToString("dd/MM/yyyy")</td>
+
+                        <!-- Tampilkan Total Harga -->
+                        <td>@dateGroup.TotalHarga.ToString("N0")</td>
+
+                        <!-- Tampilkan Jumlah Order -->
+                        <td>@dateGroup.JumlahOrder</td>
+
+                        <!-- Opsi untuk melihat detail -->
+                        <td>
+                            <a class="btn btn-sm btn-info" href="@Url.Action("DetailsByDate", "SalesReport", new { date = dateGroup.Tanggal.ToString("yyyy-MM-dd") })">
+                                Lihat Detail
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        var chartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ChartData));
+
+        var labels = chartData.map(function(x) { return x.Tanggal; });
+        var data = chartData.map(function(x) { return x.TotalPenjualan; });
+
+        var ctx = document.getElementById('salesChart').getContext('2d');
+        var salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Penjualan per Tanggal',
+                    backgroundColor: 'rgba(0, 255, 255, 0.2)',
+                    borderColor: 'rgba(0, 255, 255, 1)',
+                    borderWidth: 2,
+                    data: data,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

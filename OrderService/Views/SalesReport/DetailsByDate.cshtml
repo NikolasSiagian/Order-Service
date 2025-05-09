@@ -1,0 +1,63 @@
+﻿@model List<OrderService.Models.Order>
+@{
+    ViewData["Title"] = "Detail Penjualan per Tanggal";
+    Layout = "~/Views/Shared/_Layouts.cshtml";
+}
+
+<h1 class="h3 mb-4 text-gray-800">Detail Penjualan pada @ViewBag.Date</h1>
+
+<a href="@Url.Action("ExportToPdf", "SalesReport", new { date = ViewBag.Date })" target="_blank" class="btn btn-danger mb-3">
+    <i class="fa fa-file-pdf"></i> Cetak PDF
+</a>
+
+
+<div class="card">
+    <div class="card-body">
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-warning">Belum ada pesanan pada tanggal ini.</div>
+        }
+        else
+        {
+            foreach (var order in Model)
+            {
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between">
+                            <div><strong>Order No:</strong> @order.OrderNo</div>
+                            <div><strong>Pelanggan:</strong> @order.CustomerName</div>
+                        </div>
+                        <div class="small mt-1">
+                            <strong>Tanggal:</strong> @order.OrderDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nama Makanan</th>
+                                    <th>Jumlah</th>
+                                    <th>Total Harga (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.Food?.Name</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.TotalPrice.ToString("N0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-right">
+                        <strong>Total Order:</strong> Rp @order.TotalPrice.ToString("N0")
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

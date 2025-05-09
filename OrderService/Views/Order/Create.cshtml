@@ -1,0 +1,136 @@
+﻿@model OrderService.Models.Order
+
+@{
+    ViewData["Title"] = "Tambah Pesanan";
+    Layout = "~/Views/Shared/_Layouts.cshtml";
+    var foods = ViewBag.Foods as List<Food>;
+}
+
+<form method="post" asp-action="Create" id="orderForm" onsubmit="return validateForm()">
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="mb-3 col-md-6 col-lg-4">
+            <label for="customerName" class="form-label">Nama Pemesan</label>
+            <input type="text" name="CustomerName" id="customerName" class="form-control" required />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="mb-3 col-md-6 col-lg-4">
+            <label for="foodSelect" class="form-label">Makanan</label>
+            <select id="foodSelect" class="form-control">
+                <option value="" disabled selected>-- Pilih Menu --</option>
+                @foreach (var food in foods)
+                {
+                    <option value="@food.FoodId" data-price="@food.Price">
+                        @food.Name - @food.Price.ToString("N0")</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="qty" class="form-label">Jumlah</label>
+            <input type="number" id="qty" class="form-control" min="1" />
+        </div>
+        <div class="mt-3 col-12 text-end">
+            <button type="button" class="btn btn-primary" onclick="addItem()">Tambah ke Daftar</button>
+        </div>
+    </div>
+
+    <hr />
+
+    <h5>Daftar Pesanan:</h5>
+    <table class="table table-bordered" id="orderTable">
+        <thead>
+            <tr>
+                <th>Menu</th>
+                <th>Harga(Rp)</th>
+                <th>Jumlah</th>
+                <th>Total(Rp)</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div id="hiddenInputs"></div>
+
+    <div class="mt-3 text-end">
+        <button type="submit" class="btn btn-success">Simpan Pesanan</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        let items = [];
+
+        function addItem() {
+            const foodSelect = document.getElementById("foodSelect");
+            const qtyInput = document.getElementById("qty");
+
+            const foodId = parseInt(foodSelect.value);
+            const foodName = foodSelect.options[foodSelect.selectedIndex].text;
+            const price = parseFloat(foodSelect.options[foodSelect.selectedIndex].dataset.price);
+            const quantity = parseInt(qtyInput.value);
+
+            if (isNaN(foodId) || quantity < 1 || isNaN(price)) {
+                alert("Mohon pilih makanan dan isi jumlah.");
+                return;
+            }
+
+            const total = price * quantity;
+            items.push({ foodId, foodName, price, quantity, total });
+
+            renderTable();
+            renderHiddenInputs();
+
+            // reset
+            foodSelect.selectedIndex = 0;
+            qtyInput.value = '';
+        }
+
+        function removeItem(index) {
+            items.splice(index, 1);
+            renderTable();
+            renderHiddenInputs();
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector("#orderTable tbody");
+            tbody.innerHTML = "";
+
+            items.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.foodName}</td>
+                        <td>${item.price.toLocaleString("id-ID")}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.total.toLocaleString("id-ID")}</td>
+                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${index})">Hapus</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderHiddenInputs() {
+            const container = document.getElementById("hiddenInputs");
+            container.innerHTML = "";
+
+            items.forEach((item, index) => {
+                container.innerHTML += `
+                    <input type="hidden" name="OrderItems[${index}].FoodId" value="${item.foodId}" />
+                    <input type="hidden" name="OrderItems[${index}].Quantity" value="${item.quantity}" />
+                `;
+            });
+        }
+
+        function validateForm() {
+            if (items.length === 0) {
+                alert("Minimal 1 item harus ditambahkan.");
+                return false;
+            }
+
+            renderHiddenInputs();
+            return true;
+        }
+    </script>
+}

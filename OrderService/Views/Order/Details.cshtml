@@ -1,0 +1,97 @@
+﻿@model OrderService.Models.Order
+
+@{
+    ViewData["Title"] = "Detail Pesanan";
+    Layout = "~/Views/Shared/_Layouts.cshtml";
+}
+
+<h2 class="mb-4">Detail Pesanan</h2>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <p><strong>Nomor Pesanan:</strong> @Model.OrderNo</p>
+        <p><strong>Tanggal Pesanan:</strong> @Model.OrderDate.ToString("dd MMMM yyyy - HH:mm")</p>
+        <p><strong>Nama Pemesan:</strong> @Model.CustomerName</p>
+        <p><strong>Status Pembayaran:</strong> @(Model.IsPaid ? "Sudah Dibayar" : "Menunggu Pembayaran")</p>
+    </div>
+</div>
+
+
+<hr />
+
+<h5>Daftar Pesanan:</h5>
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Menu</th>
+            <th>Harga(Rp)</th>
+            <th>Jumlah</th>
+            <th>Total(Rp)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.OrderItems != null && Model.OrderItems.Any())
+        {
+            foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <td>@item.Food?.Name</td>
+                    <td>@item.Food?.Price.ToString("N0")</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.TotalPrice.ToString("N0")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">Tidak ada item dalam pesanan ini.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="mt-3 text-end">
+    <p><strong>Subtotal(Rp):</strong> @Model.OrderItems.Sum(i => i.TotalPrice).ToString("N0")</p>
+</div>
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        @if (!Model.IsPaid)
+        {
+            <form method="post" asp-action="ProcessPayment" id="paymentForm">
+                <input type="hidden" name="OrderId" value="@Model.OrderId" />
+
+                <div class="mb-3">
+                    <label for="paymentAmount" class="form-label">Jumlah Pembayaran</label>
+                    <input type="number" class="form-control" id="paymentAmount" name="paymentAmount" min="1" step="any" required />
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-success" name="action" value="bayar">Bayar</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-success mb-0">
+                Pesanan ini sudah <strong>LUNAS</strong>. Terima kasih!
+            </div>
+        }
+    </div>
+</div>
+
+
+
+<div class="mt-4 text-end">
+    <a asp-action="Index" class="btn btn-secondary">Kembali ke Daftar Pesanan</a>
+</div>
+
+

@@ -1,0 +1,50 @@
+﻿@{
+    Layout = "~/Views/Shared/_layouts.cshtml";
+}
+
+
+<h2 class="mb-4">Dashboard Penjualan</h2>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-left-primary">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    <i class="fas fa-calendar-day fa-2x text-primary"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Penjualan Harian</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rp @ViewBag.TotalHarian.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-left-success">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    <i class="fas fa-calendar-alt fa-2x text-success"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Penjualan Bulanan</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rp @ViewBag.TotalBulanan.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-left-info">
+            <div class="card-body d-flex align-items-center">
+                <div class="mr-3">
+                    <i class="fas fa-calendar fa-2x text-info"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Penjualan Tahunan</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rp @ViewBag.TotalTahunan.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
